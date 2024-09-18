@@ -24,7 +24,7 @@ import {
   DateTimeModeType,
 } from 'src/explore/components/controls/DateFilterControl/types';
 import { SEPARATOR } from './dateFilterUtils';
-import { SEVEN_DAYS_AGO, MIDNIGHT, MOMENT_FORMAT } from './constants';
+import { MIDNIGHT, MOMENT_FORMAT } from './constants';
 
 /**
  * RegExp to test a string for a full ISO 8601 Date
@@ -48,8 +48,8 @@ export const ISO8601_AND_CONSTANT = RegExp(
 );
 const DATETIME_CONSTANT = ['now', 'today'];
 const defaultCustomRange: CustomRangeType = {
-  sinceDatetime: SEVEN_DAYS_AGO,
-  sinceMode: 'relative',
+  sinceDatetime: MIDNIGHT,
+  sinceMode: 'specific',
   sinceGrain: 'day',
   sinceGrainValue: -7,
   untilDatetime: MIDNIGHT,
@@ -59,6 +59,7 @@ const defaultCustomRange: CustomRangeType = {
   anchorMode: 'now',
   anchorValue: 'now',
 };
+
 const SPECIFIC_MODE = ['specific', 'today', 'now'];
 
 export const dttmToMoment = (dttm: string): Moment => {

@@ -20,20 +20,15 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { t } from '@superset-ui/core';
 import { Moment } from 'moment';
-import { isInteger } from 'lodash';
+// import { isInteger } from 'lodash';
 // @ts-ignore
 import { locales } from 'antd/dist/antd-with-locales';
 import { Col, Row } from 'src/components';
-import { InputNumber } from 'src/components/Input';
+
 import { DatePicker } from 'src/components/DatePicker';
 import { Radio } from 'src/components/Radio';
-import Select from 'src/components/Select/Select';
-import { InfoTooltipWithTrigger } from '@superset-ui/chart-controls';
+
 import {
-  SINCE_GRAIN_OPTIONS,
-  SINCE_MODE_OPTIONS,
-  UNTIL_GRAIN_OPTIONS,
-  UNTIL_MODE_OPTIONS,
   MOMENT_FORMAT,
   MIDNIGHT,
   customTimeRangeDecode,
@@ -55,17 +50,18 @@ export function CustomFrame(props: FrameComponentProps) {
   const {
     sinceDatetime,
     sinceMode,
-    sinceGrain,
-    sinceGrainValue,
+    // sinceGrain,
+    // sinceGrainValue,
     untilDatetime,
     untilMode,
-    untilGrain,
-    untilGrainValue,
+    // untilGrain,
+    // untilGrainValue,
     anchorValue,
     anchorMode,
   } = { ...customRange };
 
   function onChange(control: CustomRangeKey, value: string) {
+    console.log(' value', value);
     props.onChange(
       customTimeRangeEncode({
         ...customRange,
@@ -74,20 +70,20 @@ export function CustomFrame(props: FrameComponentProps) {
     );
   }
 
-  function onGrainValue(
-    control: 'sinceGrainValue' | 'untilGrainValue',
-    value: string | number,
-  ) {
-    // only positive values in grainValue controls
-    if (isInteger(value) && value > 0) {
-      props.onChange(
-        customTimeRangeEncode({
-          ...customRange,
-          [control]: value,
-        }),
-      );
-    }
-  }
+  // function onGrainValue(
+  //   control: 'sinceGrainValue' | 'untilGrainValue',
+  //   value: string | number,
+  // ) {
+  //   // only positive values in grainValue controls
+  //   if (isInteger(value) && value > 0) {
+  //     props.onChange(
+  //       customTimeRangeEncode({
+  //         ...customRange,
+  //         [control]: value,
+  //       }),
+  //     );
+  //   }
+  // }
 
   function onAnchorMode(option: any) {
     const radioValue = option.target.value;
@@ -125,7 +121,7 @@ export function CustomFrame(props: FrameComponentProps) {
       <div className="section-title">{t('Configure custom time range')}</div>
       <Row gutter={24}>
         <Col span={12}>
-          <div className="control-label">
+          {/* <div className="control-label">
             {t('START (INCLUSIVE)')}{' '}
             <InfoTooltipWithTrigger
               tooltip={t('Start date included in time range')}
@@ -137,24 +133,24 @@ export function CustomFrame(props: FrameComponentProps) {
             options={SINCE_MODE_OPTIONS}
             value={sinceMode}
             onChange={(value: string) => onChange('sinceMode', value)}
-          />
-          {sinceMode === 'specific' && (
-            <Row>
-              <DatePicker
-                showTime
-                defaultValue={dttmToMoment(sinceDatetime)}
-                onChange={(datetime: Moment) =>
-                  onChange('sinceDatetime', datetime.format(MOMENT_FORMAT))
-                }
-                allowClear={false}
-                locale={datePickerLocale}
-              />
-            </Row>
-          )}
-          {sinceMode === 'relative' && (
+          /> */}
+          {/* {sinceMode === 'specific' && ( */}
+          <Row>
+            <DatePicker
+              // showTime
+              defaultValue={dttmToMoment(sinceDatetime)}
+              onChange={(datetime: Moment) =>
+                onChange('sinceDatetime', datetime.format(MOMENT_FORMAT))
+              }
+              allowClear={false}
+              locale={datePickerLocale}
+              renderExtraFooter={undefined}
+            />
+          </Row>
+          {/* )} */}
+          {/* {sinceMode === 'relative' && (
             <Row gutter={8}>
               <Col span={11}>
-                {/* Make sure sinceGrainValue looks like a positive integer */}
                 <InputNumber
                   placeholder={t('Relative quantity')}
                   value={Math.abs(sinceGrainValue)}
@@ -175,10 +171,10 @@ export function CustomFrame(props: FrameComponentProps) {
                 />
               </Col>
             </Row>
-          )}
+          )} */}
         </Col>
         <Col span={12}>
-          <div className="control-label">
+          {/* <div className="control-label">
             {t('END (EXCLUSIVE)')}{' '}
             <InfoTooltipWithTrigger
               tooltip={t('End date excluded from time range')}
@@ -190,21 +186,22 @@ export function CustomFrame(props: FrameComponentProps) {
             options={UNTIL_MODE_OPTIONS}
             value={untilMode}
             onChange={(value: string) => onChange('untilMode', value)}
-          />
-          {untilMode === 'specific' && (
-            <Row>
-              <DatePicker
-                showTime
-                defaultValue={dttmToMoment(untilDatetime)}
-                onChange={(datetime: Moment) =>
-                  onChange('untilDatetime', datetime.format(MOMENT_FORMAT))
-                }
-                allowClear={false}
-                locale={datePickerLocale}
-              />
-            </Row>
-          )}
-          {untilMode === 'relative' && (
+          /> */}
+          {/* {untilMode === 'specific' && ( */}
+          <Row>
+            <DatePicker
+              // showTime
+              defaultValue={dttmToMoment(untilDatetime)}
+              onChange={(datetime: Moment) =>
+                onChange('untilDatetime', datetime.format(MOMENT_FORMAT))
+              }
+              allowClear={false}
+              locale={datePickerLocale}
+              renderExtraFooter={undefined}
+            />
+          </Row>
+          {/* )} */}
+          {/* {untilMode === 'relative' && (
             <Row gutter={8}>
               <Col span={11}>
                 <InputNumber
@@ -227,7 +224,7 @@ export function CustomFrame(props: FrameComponentProps) {
                 />
               </Col>
             </Row>
-          )}
+          )} */}
         </Col>
       </Row>
       {sinceMode === 'relative' && untilMode === 'relative' && (

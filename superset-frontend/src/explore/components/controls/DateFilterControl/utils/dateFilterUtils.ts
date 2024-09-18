@@ -41,10 +41,13 @@ export const formatTimeRange = (
 ) => {
   const splitDateRange = timeRange.split(SEPARATOR);
   if (splitDateRange.length === 1) return timeRange;
-  return `${formatDateEndpoint(
-    splitDateRange[0],
-    true,
-  )} ≤ ${columnPlaceholder} < ${formatDateEndpoint(splitDateRange[1])}`;
+  return `${formatDateEndpoint(splitDateRange[0], true)} - ${formatDateEndpoint(
+    splitDateRange[1],
+  )}`;
+  // return `${formatDateEndpoint(
+  //   splitDateRange[0],
+  //   true,
+  // )} - ${columnPlaceholder} - ${formatDateEndpoint(splitDateRange[1])}`;
 };
 
 export const guessFrame = (timeRange: string): FrameType => {
@@ -60,7 +63,7 @@ export const guessFrame = (timeRange: string): FrameType => {
   if (customTimeRangeDecode(timeRange).matchedFlag) {
     return 'Custom';
   }
-  return 'Advanced';
+  return 'CustomDate';
 };
 
 export const fetchTimeRange = async (

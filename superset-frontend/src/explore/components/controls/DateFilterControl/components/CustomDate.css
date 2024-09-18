@@ -1,0 +1,24 @@
+.custom-date-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.row-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 90px;
+}
+.radio-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.date-picker-container {
+  flex: 2;
+}
+
+.horizontal-radio {
+  display: block;
+  margin-bottom: 8px;
+}

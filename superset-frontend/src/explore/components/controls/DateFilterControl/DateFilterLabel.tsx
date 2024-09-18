@@ -17,6 +17,7 @@
  * under the License.
  */
 import React, { ReactNode, useState, useEffect, useMemo } from 'react';
+
 import {
   css,
   styled,
@@ -47,12 +48,14 @@ import {
   useDefaultTimeFilter,
 } from './utils';
 import {
-  CommonFrame,
-  CalendarFrame,
-  CustomFrame,
-  AdvancedFrame,
+  // CommonFrame,
+  // CalendarFrame,
+  // CustomFrame,
+  // AdvancedFrame,
   DateLabel,
 } from './components';
+
+import { CustomDate } from './components/CustomDate';
 
 const StyledRangeType = styled(Select)`
   width: 272px;
@@ -162,7 +165,6 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
 
   const value = props.value ?? defaultTimeFilter;
   const [actualTimeRange, setActualTimeRange] = useState<string>(value);
-
   const [show, setShow] = useState<boolean>(false);
   const guessedFrame = useMemo(() => guessFrame(value), [value]);
   const [frame, setFrame] = useState<FrameType>(guessedFrame);
@@ -170,6 +172,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
   const [timeRangeValue, setTimeRangeValue] = useState(value);
   const [validTimeRange, setValidTimeRange] = useState<boolean>(false);
   const [evalResponse, setEvalResponse] = useState<string>(value);
+
   const [tooltipTitle, setTooltipTitle] = useState<ReactNode | null>(value);
   const theme = useTheme();
   const [labelRef, labelIsTruncated] = useCSSTextTruncation<HTMLSpanElement>();
@@ -245,13 +248,15 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
     [timeRangeValue],
   );
 
-  function onSave() {
-    onChange(timeRangeValue);
-    setShow(false);
-    onClosePopover();
-  }
+  // function onSave() {
+
+  //   onChange(timeRangeValue);
+  //   setShow(false);
+  //   onClosePopover();
+  // }
 
   function onOpen() {
+    console.log(' e', evalResponse, validTimeRange);
     setTimeRangeValue(value);
     setFrame(guessedFrame);
     setShow(true);
@@ -259,6 +264,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
   }
 
   function onHide() {
+    // onChange(oldResponse);
     setTimeRangeValue(value);
     setFrame(guessedFrame);
     setShow(false);
@@ -268,6 +274,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
   const toggleOverlay = () => {
     if (show) {
       onHide();
+      onChange(timeRangeValue);
     } else {
       onOpen();
     }
@@ -290,23 +297,27 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
         onChange={onChangeFrame}
       />
       {frame !== 'No filter' && <Divider />}
-      {frame === 'Common' && (
+      {/* {frame === 'Common' && (
         <CommonFrame value={timeRangeValue} onChange={setTimeRangeValue} />
       )}
       {frame === 'Calendar' && (
         <CalendarFrame value={timeRangeValue} onChange={setTimeRangeValue} />
-      )}
-      {frame === 'Advanced' && (
+      )} */}
+      {/* {frame === 'Advanced' && (
         <AdvancedFrame value={timeRangeValue} onChange={setTimeRangeValue} />
-      )}
-      {frame === 'Custom' && (
+      )} */}
+      {/* {frame === 'Custom' && (
         <CustomFrame value={timeRangeValue} onChange={setTimeRangeValue} />
+      )} */}
+
+      {frame === 'CustomDate' && (
+        <CustomDate value={timeRangeValue} onChange={setTimeRangeValue} />
       )}
       {frame === 'No filter' && (
         <div data-test={DATE_FILTER_TEST_KEY.noFilter} />
       )}
-      <Divider />
-      <div>
+      {/* <Divider /> */}
+      {/* <div>
         <div className="section-title">{t('Actual time range')}</div>
         {validTimeRange && (
           <div>
@@ -319,7 +330,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
             <span className="text error">{evalResponse}</span>
           </IconWrapper>
         )}
-      </div>
+      </div> */}
       <Divider />
       <div className="footer">
         <Button
@@ -331,8 +342,8 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
         >
           {t('CANCEL')}
         </Button>
-        <Button
-          buttonStyle="primary"
+        {/* // *<Button
+            buttonStyle="primary"
           cta
           disabled={!validTimeRange}
           key="apply"
@@ -340,7 +351,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
           data-test={DATE_FILTER_TEST_KEY.applyButton}
         >
           {t('APPLY')}
-        </Button>
+        </Button> //* */}
       </div>
     </ContentStyleWrapper>
   );

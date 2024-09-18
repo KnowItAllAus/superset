@@ -28,11 +28,20 @@ import {
 } from 'src/explore/components/controls/DateFilterControl/types';
 
 export const FRAME_OPTIONS: SelectOptionType[] = [
-  { value: 'Common', label: t('Last') },
-  { value: 'Calendar', label: t('Previous') },
-  { value: 'Custom', label: t('Custom') },
-  { value: 'Advanced', label: t('Advanced') },
+  // { value: 'Common', label: t('Last') },
+  // { value: 'Calendar', label: t('Previous') },
+  // { value: 'Custom', label: t('Custom') },
+  // { value: 'Advanced', label: t('Advanced') },
   { value: 'No filter', label: t('No filter') },
+  { value: 'CustomDate', label: t('Custom Date') },
+];
+export const CUSTOM_DATE: any = [
+  { value: 'CurrentMonth', label: t('Current month to date') },
+  { value: 'LastMonth', label: t('Last full month') },
+  { value: 'Last6Month', label: t('Last 6 month') },
+  { value: 'Last12Month', label: t('Last 12 month') },
+  { value: 'LastFinancialYear', label: t('Last financial year') },
+  { value: 'CustomDate', label: t('Custom date') },
 ];
 
 export const COMMON_RANGE_OPTIONS: SelectOptionType[] = [
@@ -108,6 +117,8 @@ export const CALENDAR_RANGE_SET: Set<CalendarRangeType> = new Set([
 ]);
 
 export const MOMENT_FORMAT = 'YYYY-MM-DD[T]HH:mm:ss';
+// export const MOMENT_FORMAT = 'YYYY-MM-DD';
+
 export const SEVEN_DAYS_AGO = moment()
   .utc()
   .startOf('day')

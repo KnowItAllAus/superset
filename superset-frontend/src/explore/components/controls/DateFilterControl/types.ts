@@ -26,7 +26,8 @@ export type FrameType =
   | 'Calendar'
   | 'Custom'
   | 'Advanced'
-  | 'No filter';
+  | 'No filter'
+  | 'CustomDate';
 
 export type DateTimeGrainType =
   | 'second'
@@ -48,7 +49,8 @@ export type CustomRangeKey =
   | 'untilGrain'
   | 'untilGrainValue'
   | 'anchorMode'
-  | 'anchorValue';
+  | 'anchorValue'
+  | 'CurrentMonth';
 
 export type DateTimeModeType = 'specific' | 'relative' | 'now' | 'today';
 
