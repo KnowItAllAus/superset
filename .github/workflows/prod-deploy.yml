@@ -1,0 +1,117 @@
+name: Prod Superset Upgrade
+run-name: Upgrade Superset Prod by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push-superset:
+    name: Build and Push Superset
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+        pnpm-version: [8.10.0]
+    steps:
+      - name: Configure Prod AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-southeast-2
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: SupersetProdDeploymentSession
+
+      # Login to Amazon PROD ECR
+      - name: Login to Amazon PROD ECR
+        id: login-prod-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+            version: ${{ matrix.pnpm-version }}
+      - uses: actions/setup-node@v3
+        with:
+            node-version: ${{ matrix.node-version }}
+            cache: 'pnpm'
+      - name: Build and Push Superset Images from Dockerhub to Prod ECR
+        id: docker-build-push-superset
+        env:
+          ECR_REGISTRY: ${{ steps.login-prod-ecr.outputs.registry }}
+          ECR_REPOSITORY: kia-ee-apache-superset-prod
+          SUPERSET_IMAGE_TAG: ${{ github.run_number }} 
+        run: |
+          cd superset-frontend/
+          npm install
+          npm run prettier
+          npm run build
+          TAG=3.1.2 docker-compose -f docker-compose-non-dev.yml build --no-cache superset
+          docker tag apache/superset:$SUPERSET_IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$SUPERSET_IMAGE_TAG
+          docker tag apache/superset:$SUPERSET_IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY --all-tags
+
+  upgrade:
+    needs: [build-and-push-superset]
+    name: Upgrade Redis and Superset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Prod AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-southeast-2
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: SupersetProdDeploymentSession
+
+      - name: Download superset service task definition
+        run: |
+          aws ecs describe-task-definition --task-definition kia-ee-superset-prod --query taskDefinition > superset-service-task-definition.json
+
+      - name: Render Amazon ECS task definition with redis
+        id: render-superset-cache-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: superset-service-task-definition.json
+          container-name: superset_cache
+          image: 770231667896.dkr.ecr.ap-southeast-2.amazonaws.com/kia-ee-redis-prod:latest
+
+      - name: Modify Amazon ECS task definition with superset app
+        id: render-superset-app-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-superset-cache-container.outputs.task-definition }}
+          container-name: superset_app
+          image: 770231667896.dkr.ecr.ap-southeast-2.amazonaws.com/kia-ee-apache-superset-prod:${{ github.run_number }}
+
+      - name: Modify Amazon ECS task definition with superset worker
+        id: render-superset-worker-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-superset-app-container.outputs.task-definition }}
+          container-name: superset_worker
+          image: 770231667896.dkr.ecr.ap-southeast-2.amazonaws.com/kia-ee-apache-superset-prod:${{ github.run_number }}
+
+      - name: Modify Amazon ECS task definition with superset worker beat
+        id: render-superset-worker-beat-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-superset-worker-container.outputs.task-definition }}
+          container-name: superset_worker_beat
+          image: 770231667896.dkr.ecr.ap-southeast-2.amazonaws.com/kia-ee-apache-superset-prod:${{ github.run_number }} 
+
+      - name: Modify Amazon ECS task definition with superset init
+        id: render-superset-init-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-superset-worker-beat-container.outputs.task-definition }}
+          container-name: superset_init
+          image: 770231667896.dkr.ecr.ap-southeast-2.amazonaws.com/kia-ee-apache-superset-prod:${{ github.run_number }}
+
+      - name: Deploy superset service to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-superset-init-container.outputs.task-definition }}
+          service: kia-ee-superset-service-prod
+          cluster: kia-ee-superset-ecs-cluster-prod
