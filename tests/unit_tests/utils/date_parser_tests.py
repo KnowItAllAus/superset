@@ -190,35 +190,35 @@ def test_get_since_until() -> None:
     assert result == expected
 
     result = get_since_until("previous calendar week")
-    expected = datetime(2016, 10, 31, 0, 0, 0), datetime(2016, 11, 7, 0, 0, 0)
+    expected = datetime(2016, 10, 31, 0, 0, 0), datetime(2016, 11, 6, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("previous calendar month")
-    expected = datetime(2016, 10, 1, 0, 0, 0), datetime(2016, 11, 1, 0, 0, 0)
+    expected = datetime(2016, 10, 1, 0, 0, 0), datetime(2016, 10, 31, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("previous calendar year")
-    expected = datetime(2015, 1, 1, 0, 0, 0), datetime(2016, 1, 1, 0, 0, 0)
+    expected = datetime(2015, 1, 1, 0, 0, 0), datetime(2015, 12, 31, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("Current day")
-    expected = datetime(2016, 11, 7, 0, 0, 0), datetime(2016, 11, 8, 0, 0, 0)
+    expected = datetime(2016, 11, 7, 0, 0, 0), datetime(2016, 11, 7, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("Current week")
-    expected = datetime(2016, 11, 7, 0, 0, 0), datetime(2016, 11, 14, 0, 0, 0)
+    expected = datetime(2016, 11, 7, 0, 0, 0), datetime(2016, 11, 13, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("Current month")
-    expected = datetime(2016, 11, 1, 0, 0, 0), datetime(2016, 12, 1, 0, 0, 0)
+    expected = datetime(2016, 11, 1, 0, 0, 0), datetime(2016, 11, 30, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("Current quarter")
-    expected = datetime(2016, 10, 1, 0, 0, 0), datetime(2017, 1, 1, 0, 0, 0)
+    expected = datetime(2016, 10, 1, 0, 0, 0), datetime(2016, 12, 31, 0, 0, 0)
     assert result == expected
 
     result = get_since_until("Current year")
-    expected = expected = datetime(2016, 1, 1, 0, 0, 0), datetime(2017, 1, 1, 0, 0, 0)
+    expected = datetime(2016, 1, 1, 0, 0, 0), datetime(2016, 12, 31, 0, 0, 0)
     assert result == expected
 
     # Tests for our new instant_time_comparison logic and Feature Flag off
@@ -329,27 +329,27 @@ def test_get_since_until_instant_time_comparison_enabled() -> None:
 def test_previous_calendar_quarter():
     with freezegun.freeze_time("2023-01-15"):
         result = get_since_until("previous calendar quarter")
-        expected = (datetime(2022, 10, 1), datetime(2023, 1, 1))
+        expected = (datetime(2022, 10, 1), datetime(2022, 12, 31))
         assert result == expected
 
     with freezegun.freeze_time("2023, 4, 15"):
         result = get_since_until("previous calendar quarter")
-        expected = (datetime(2023, 1, 1), datetime(2023, 4, 1))
+        expected = (datetime(2023, 1, 1), datetime(2023, 3, 31))
         assert result == expected
 
     with freezegun.freeze_time("2023, 8, 15"):
         result = get_since_until("previous calendar quarter")
-        expected = (datetime(2023, 4, 1), datetime(2023, 7, 1))
+        expected = (datetime(2023, 4, 1), datetime(2023, 6, 30))
         assert result == expected
 
     with freezegun.freeze_time("2023, 10, 15"):
         result = get_since_until("previous calendar quarter")
-        expected = (datetime(2023, 7, 1), datetime(2023, 10, 1))
+        expected = (datetime(2023, 7, 1), datetime(2023, 9, 30))
         assert result == expected
 
     with freezegun.freeze_time("2024, 1, 1"):
         result = get_since_until("previous calendar quarter")
-        expected = (datetime(2023, 10, 1), datetime(2024, 1, 1))
+        expected = (datetime(2023, 10, 1), datetime(2023, 12, 31))
         assert result == expected
 
 

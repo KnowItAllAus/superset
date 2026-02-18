@@ -180,14 +180,14 @@ export function CustomFrame(props: FrameComponentProps) {
           </Col>
           <Col span={12}>
             <div className="control-label">
-              {t('End (exclusive)')}{' '}
+              {t('End (inclusive)')}{' '}
               <InfoTooltip
-                tooltip={t('End date excluded from time range')}
+                tooltip={t('End date included in time range')}
                 placement="right"
               />
             </div>
             <Select
-              ariaLabel={t('End (exclusive)')}
+              ariaLabel={t('End (inclusive)')}
               options={UNTIL_MODE_OPTIONS}
               value={untilMode}
               onChange={(value: string) => onChange('untilMode', value)}

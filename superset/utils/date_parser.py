@@ -429,13 +429,13 @@ def get_since_until(  # pylint: disable=too-many-arguments,too-many-locals,too-m
         and time_range.startswith("previous calendar week")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), -1, WEEK), WEEK) : DATETRUNC(DATETIME('today'), WEEK)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), -1, WEEK), WEEK) : DATEADD(DATETRUNC(DATETIME('today'), WEEK), -1, DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("previous calendar month")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), -1, MONTH), MONTH) : DATETRUNC(DATETIME('today'), MONTH)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), -1, MONTH), MONTH) : DATEADD(DATETRUNC(DATETIME('today'), MONTH), -1, DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("previous calendar quarter")
@@ -443,44 +443,44 @@ def get_since_until(  # pylint: disable=too-many-arguments,too-many-locals,too-m
     ):
         time_range = (
             "DATETRUNC(DATEADD(DATETIME('today'), -1, QUARTER), QUARTER) : "
-            "DATETRUNC(DATETIME('today'), QUARTER)"  # noqa: E501
+            "DATEADD(DATETRUNC(DATETIME('today'), QUARTER), -1, DAY)"  # noqa: E501
         )
     if (
         time_range
         and time_range.startswith("previous calendar year")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), -1, YEAR), YEAR) : DATETRUNC(DATETIME('today'), YEAR)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), -1, YEAR), YEAR) : DATEADD(DATETRUNC(DATETIME('today'), YEAR), -1, DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("Current day")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, DAY), DAY) : DATETRUNC(DATEADD(DATETIME('today'), 1, DAY), DAY)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, DAY), DAY) : DATETRUNC(DATEADD(DATETIME('today'), 0, DAY), DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("Current week")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, WEEK), WEEK) : DATETRUNC(DATEADD(DATETIME('today'), 1, WEEK), WEEK)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, WEEK), WEEK) : DATEADD(DATETRUNC(DATEADD(DATETIME('today'), 1, WEEK), WEEK), -1, DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("Current month")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, MONTH), MONTH) : DATETRUNC(DATEADD(DATETIME('today'), 1, MONTH), MONTH)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, MONTH), MONTH) : DATEADD(DATETRUNC(DATEADD(DATETIME('today'), 1, MONTH), MONTH), -1, DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("Current quarter")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, QUARTER), QUARTER) : DATETRUNC(DATEADD(DATETIME('today'), 1, QUARTER), QUARTER)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, QUARTER), QUARTER) : DATEADD(DATETRUNC(DATEADD(DATETIME('today'), 1, QUARTER), QUARTER), -1, DAY)"  # noqa: E501
     if (
         time_range
         and time_range.startswith("Current year")
         and separator not in time_range
     ):
-        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, YEAR), YEAR) : DATETRUNC(DATEADD(DATETIME('today'), 1, YEAR), YEAR)"  # noqa: E501
+        time_range = "DATETRUNC(DATEADD(DATETIME('today'), 0, YEAR), YEAR) : DATEADD(DATETRUNC(DATEADD(DATETIME('today'), 1, YEAR), YEAR), -1, DAY)"  # noqa: E501
 
     # Handle "first [subunit] of [scope] [unit]" patterns that produce a range
     # e.g., "first week of this year" -> returns start of year to end of first week
