@@ -26,8 +26,17 @@ export type FrameType =
   | 'Calendar'
   | 'Current'
   | 'Custom'
+  | 'CustomDate'
   | 'Advanced'
   | 'No filter';
+
+export type CustomDatePreset =
+  | 'CurrentMonth'
+  | 'LastMonth'
+  | 'Last6Month'
+  | 'Last12Month'
+  | 'LastFinancialYear'
+  | 'CustomDate';
 
 export type DateTimeGrainType =
   | 'second'
