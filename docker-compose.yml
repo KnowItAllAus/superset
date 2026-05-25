@@ -128,9 +128,9 @@ services:
     # Those bindings need to be compiled for each OS and the container
     # OS is not necessarily the same as host OS.
     volumes:
-      # - ./superset-websocket:/home/superset-websocket
-      # - /home/superset-websocket/node_modules
-      # - /home/superset-websocket/dist
+      - ./superset-websocket:/home/superset-websocket
+      - /home/superset-websocket/node_modules
+      - /home/superset-websocket/dist
 
       # Mounting a config file that contains a dummy secret required to boot up.
       # do not use this docker compose in production
