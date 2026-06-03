@@ -17,7 +17,8 @@
  * under the License.
  */
 import { useMemo } from 'react';
-import { t, styled, css } from '@superset-ui/core';
+import { t } from '@apache-superset/core/translation';
+import { css, styled } from '@apache-superset/core/theme';
 import { extendedDayjs } from '@superset-ui/core/utils/dates';
 import type { Dayjs } from 'dayjs';
 import {
