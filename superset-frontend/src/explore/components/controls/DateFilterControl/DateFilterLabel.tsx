@@ -53,6 +53,7 @@ import {
   CommonFrame,
   CalendarFrame,
   CustomFrame,
+  CustomDateFrame,
   AdvancedFrame,
   DateLabel,
 } from './components';
@@ -301,6 +302,12 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
           value={timeRangeValue}
           onChange={setTimeRangeValue}
           isOverflowingFilterBar={isOverflowingFilterBar}
+        />
+      )}
+      {frame === 'CustomDate' && (
+        <CustomDateFrame
+          value={timeRangeValue}
+          onChange={setTimeRangeValue}
         />
       )}
       {frame === 'No filter' && <div data-test={DateFilterTestKey.NoFilter} />}

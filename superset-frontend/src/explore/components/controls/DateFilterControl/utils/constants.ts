@@ -36,11 +36,7 @@ import { CheckboxOptionType } from '@superset-ui/core/components/Radio';
 import { extendedDayjs } from '@superset-ui/core/utils/dates';
 
 export const FRAME_OPTIONS: SelectOptionType[] = [
-  { value: 'Common', label: t('Last') },
-  { value: 'Calendar', label: t('Previous') },
-  { value: 'Current', label: t('Current') },
-  { value: 'Custom', label: t('Custom') },
-  { value: 'Advanced', label: t('Advanced') },
+  { value: 'CustomDate', label: t('Custom Date') },
   { value: 'No filter', label: t('No filter') },
 ];
 
@@ -144,6 +140,17 @@ export const MIDNIGHT = extendedDayjs()
   .utc()
   .startOf('day')
   .format(DAYJS_FORMAT);
+
+export const CUSTOM_DATE_PRESETS: CheckboxOptionType[] = [
+  { value: 'CurrentMonth', label: t('Current month to date') },
+  { value: 'LastMonth', label: t('Last full month') },
+  { value: 'Last6Month', label: t('Last 6 months') },
+  { value: 'Last12Month', label: t('Last 12 months') },
+  { value: 'LastFinancialYear', label: t('Last financial year') },
+  { value: 'CustomDate', label: t('Custom date') },
+];
+
+export const SIMPLE_DATE_FORMAT = 'YYYY-MM-DD';
 
 export enum DateFilterTestKey {
   CommonFrame = 'common-frame',

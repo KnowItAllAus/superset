@@ -45,7 +45,7 @@ export const guessFrame = (timeRange: string): FrameType => {
   if (customTimeRangeDecode(timeRange).matchedFlag) {
     return 'Custom';
   }
-  return 'Advanced';
+  return 'CustomDate';
 };
 
 export function useDefaultTimeFilter() {

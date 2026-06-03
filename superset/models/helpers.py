@@ -2421,12 +2421,28 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
                 )
             )
         if end_dttm:
-            l.append(
-                col
-                < self.db_engine_spec.get_text_clause(
-                    self.dttm_sql_literal(end_dttm, time_col)
+            if (
+                end_dttm.hour == 0
+                and end_dttm.minute == 0
+                and end_dttm.second == 0
+                and end_dttm.microsecond == 0
+            ):
+                # Midnight = full-day selection: include entire day via < next_day
+                inclusive_end = end_dttm + timedelta(days=1)
+                l.append(
+                    col
+                    < self.db_engine_spec.get_text_clause(
+                        self.dttm_sql_literal(inclusive_end, time_col)
+                    )
                 )
-            )
+            else:
+                # Specific time: use <= to include records at that exact time
+                l.append(
+                    col
+                    <= self.db_engine_spec.get_text_clause(
+                        self.dttm_sql_literal(end_dttm, time_col)
+                    )
+                )
         if not l:
             return None
         return and_(True, *l)
