@@ -24,16 +24,20 @@
 # For verbose logging during development:
 # - Set SUPERSET_LOG_LEVEL=debug in docker/.env-local for detailed Superset logs
 # -----------------------------------------------------------------------
+x-superset-image: &superset-image superset-vv:6.1.2
+x-superset-depends-on: &superset-depends-on
+  - redis
+
 x-superset-volumes:
   &superset-volumes # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
   - ./docker:/app/docker
   - superset_home:/app/superset_home
 
-x-common-build: &common-build
-  context: .
-  target: dev
-  cache_from:
-    - apache/superset-cache:3.10-slim-trixie
+# x-common-build: &common-build
+#   context: .
+#   target: dev
+#   cache_from:
+#     - apache/superset-cache:3.10-slim-trixie
 
 services:
   redis:
@@ -43,27 +47,26 @@ services:
     volumes:
       - redis:/data
 
-  db:
-    env_file:
-      - path: docker/.env # default
-        required: true
-      - path: docker/.env-local # optional override
-        required: false
-    image: postgres:17
-    container_name: superset_db
-    restart: unless-stopped
-    volumes:
-      - db_home:/var/lib/postgresql/data
-      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+#  db:
+#     env_file:
+#       - path: docker/.env # default
+#         required: true
+#       - path: docker/.env-local # optional override
+#         required: false
+#     image: postgres:17
+#     container_name: superset_db
+#     restart: unless-stopped
+#     volumes:
+#       - db_home:/var/lib/postgresql/data
+#       - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 
   superset:
     env_file:
-      - path: docker/.env # default
+      - path: docker/.env-custom # custom config
         required: true
-      - path: docker/.env-local # optional override
-        required: false
-    build:
-      <<: *common-build
+    image: *superset-image
+    # build:
+    #   <<: *common-build
     container_name: superset_app
     command: ["/app/docker/docker-bootstrap.sh", "app-gunicorn"]
     user: "root"
@@ -77,34 +80,28 @@ services:
 
   superset-init:
     container_name: superset_init
-    build:
-      <<: *common-build
+    image: *superset-image
+    # build:
+    #   <<: *common-build
     command: ["/app/docker/docker-init.sh"]
     env_file:
-      - path: docker/.env # default
+      - path: docker/.env-custom # custom config
         required: true
-      - path: docker/.env-local # optional override
-        required: false
-    depends_on:
-      db:
-        condition: service_started
-      redis:
-        condition: service_started
+    depends_on: *superset-depends-on
     user: "root"
     volumes: *superset-volumes
     healthcheck:
       disable: true
 
   superset-worker:
-    build:
-      <<: *common-build
+    image: *superset-image
+    # build:
+    #   <<: *common-build
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
     env_file:
-      - path: docker/.env # default
+      - path: docker/.env-custom # custom config
         required: true
-      - path: docker/.env-local # optional override
-        required: false
     restart: unless-stopped
     depends_on:
       superset-init:
@@ -119,15 +116,14 @@ services:
         ]
 
   superset-worker-beat:
-    build:
-      <<: *common-build
+    image: *superset-image
+    # build:
+    #   <<: *common-build
     container_name: superset_worker_beat
     command: ["/app/docker/docker-bootstrap.sh", "beat"]
     env_file:
-      - path: docker/.env # default
+      - path: docker/.env-custom # custom config
         required: true
-      - path: docker/.env-local # optional override
-        required: false
     restart: unless-stopped
     depends_on:
       superset-init:
@@ -139,8 +135,6 @@ services:
 
 volumes:
   superset_home:
-    external: false
-  db_home:
     external: false
   redis:
     external: false
