@@ -62,8 +62,7 @@ services:
 
   superset:
     env_file:
-      - path: docker/.env-custom # custom config
-        required: true
+      - docker/.env-custom
     image: *superset-image
     # build:
     #   <<: *common-build
@@ -85,8 +84,7 @@ services:
     #   <<: *common-build
     command: ["/app/docker/docker-init.sh"]
     env_file:
-      - path: docker/.env-custom # custom config
-        required: true
+      - docker/.env-custom
     depends_on: *superset-depends-on
     user: "root"
     volumes: *superset-volumes
@@ -100,8 +98,7 @@ services:
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
     env_file:
-      - path: docker/.env-custom # custom config
-        required: true
+      - docker/.env-custom
     restart: unless-stopped
     depends_on:
       superset-init:
@@ -122,8 +119,7 @@ services:
     container_name: superset_worker_beat
     command: ["/app/docker/docker-bootstrap.sh", "beat"]
     env_file:
-      - path: docker/.env-custom # custom config
-        required: true
+      - docker/.env-custom
     restart: unless-stopped
     depends_on:
       superset-init:
