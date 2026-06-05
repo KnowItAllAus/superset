@@ -24,7 +24,7 @@
 # For verbose logging during development:
 # - Set SUPERSET_LOG_LEVEL=debug in docker/.env-local for detailed Superset logs
 # -----------------------------------------------------------------------
-x-superset-image: &superset-image superset-vv:6.1.2
+x-superset-image: &superset-image superset-vv:6.1.0
 x-superset-depends-on: &superset-depends-on
   - redis
 
