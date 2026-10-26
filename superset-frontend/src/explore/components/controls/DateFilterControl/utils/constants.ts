@@ -31,6 +31,7 @@ import {
   CurrentYear,
   CurrentQuarter,
   CurrentDay,
+  CustomDatePreset,
 } from 'src/explore/components/controls/DateFilterControl/types';
 import { CheckboxOptionType } from '@superset-ui/core/components/Radio';
 import { extendedDayjs } from '@superset-ui/core/utils/dates';
@@ -151,6 +152,45 @@ export const CUSTOM_DATE_PRESETS: CheckboxOptionType[] = [
 ];
 
 export const SIMPLE_DATE_FORMAT = 'YYYY-MM-DD';
+
+/**
+ * Rolling time range expressions for each named preset. These are evaluated by
+ * the backend date parser at query time, so a saved preset always reflects the
+ * day the query runs rather than the day the preset was selected.
+ *
+ * Every expression ends on `today` or on a midnight date so that the inclusive
+ * end-date handling in the backend covers the whole final day without spilling
+ * into the following period. The financial year runs 1 July to 30 June: shifting
+ * today by six months and truncating to the year lands on the start of the
+ * current financial year, from which the previous one is derived.
+ */
+const FY_START =
+  'DATEADD(DATETRUNC(DATEADD(DATETIME("today"), 6, MONTH), YEAR), -6, MONTH)';
+
+export const CUSTOM_DATE_PRESET_EXPRESSIONS: Record<
+  Exclude<CustomDatePreset, 'CustomDate'>,
+  string
+> = {
+  CurrentMonth: 'DATETRUNC(DATETIME("today"), MONTH) : today',
+  LastMonth:
+    'DATETRUNC(DATEADD(DATETIME("today"), -1, MONTH), MONTH) : DATEADD(DATETRUNC(DATETIME("today"), MONTH), -1, DAY)',
+  Last6Month: 'DATETRUNC(DATEADD(DATETIME("today"), -6, MONTH), MONTH) : today',
+  Last12Month:
+    'DATETRUNC(DATEADD(DATETIME("today"), -12, MONTH), MONTH) : today',
+  LastFinancialYear: `DATEADD(${FY_START}, -1, YEAR) : DATEADD(${FY_START}, -1, DAY)`,
+};
+
+export const CUSTOM_DATE_PRESET_BY_EXPRESSION = new Map<
+  string,
+  CustomDatePreset
+>(
+  (
+    Object.entries(CUSTOM_DATE_PRESET_EXPRESSIONS) as [
+      CustomDatePreset,
+      string,
+    ][]
+  ).map(([preset, expression]) => [expression, preset]),
+);
 
 export enum DateFilterTestKey {
   CommonFrame = 'common-frame',

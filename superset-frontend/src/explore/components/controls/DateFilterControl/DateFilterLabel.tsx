@@ -44,6 +44,7 @@ import ControlPopover from '../ControlPopover/ControlPopover';
 
 import { DateFilterControlProps, FrameType } from './types';
 import {
+  CUSTOM_DATE_PRESET_EXPRESSIONS,
   DateFilterTestKey,
   FRAME_OPTIONS,
   guessFrame,
@@ -268,6 +269,13 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
   function onChangeFrame(value: FrameType) {
     if (value === NO_TIME_RANGE) {
       setTimeRangeValue(NO_TIME_RANGE);
+    } else if (
+      value === 'CustomDate' &&
+      guessFrame(timeRangeValue) !== 'CustomDate'
+    ) {
+      // The current value belongs to another frame (e.g. "No filter"), so seed
+      // the custom date frame with a sensible rolling default.
+      setTimeRangeValue(CUSTOM_DATE_PRESET_EXPRESSIONS.CurrentMonth);
     }
     setFrame(value);
   }
@@ -305,10 +313,7 @@ export default function DateFilterLabel(props: DateFilterControlProps) {
         />
       )}
       {frame === 'CustomDate' && (
-        <CustomDateFrame
-          value={timeRangeValue}
-          onChange={setTimeRangeValue}
-        />
+        <CustomDateFrame value={timeRangeValue} onChange={setTimeRangeValue} />
       )}
       {frame === 'No filter' && <div data-test={DateFilterTestKey.NoFilter} />}
       <Divider />

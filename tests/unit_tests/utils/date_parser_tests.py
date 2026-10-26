@@ -722,3 +722,74 @@ def test_time_range_bounded_whitespace_regex_invalid(time_range: str) -> None:
     """Reject expressions with 0 or 6+ spaces (fall back to DATETIME wrapping)."""
     result = get_since_until(time_range)
     assert result[0] is None, f"Expected '{time_range}' to NOT match bounded regex"
+
+
+def test_get_since_until_custom_date_presets() -> None:
+    """
+    The frontend "Custom Date" frame stores its named presets as rolling
+    expressions so that saved defaults follow the calendar. Every expression
+    ends on `today` or a midnight date; the end is treated as inclusive of that
+    whole day when the SQL filter is built.
+    """
+    fy_start = (
+        'DATEADD(DATETRUNC(DATEADD(DATETIME("today"), 6, MONTH), YEAR), -6, MONTH)'
+    )
+    current_month = 'DATETRUNC(DATETIME("today"), MONTH) : today'
+    last_month = (
+        'DATETRUNC(DATEADD(DATETIME("today"), -1, MONTH), MONTH) : '
+        'DATEADD(DATETRUNC(DATETIME("today"), MONTH), -1, DAY)'
+    )
+    last_6_months = 'DATETRUNC(DATEADD(DATETIME("today"), -6, MONTH), MONTH) : today'
+    last_12_months = 'DATETRUNC(DATEADD(DATETIME("today"), -12, MONTH), MONTH) : today'
+    last_financial_year = (
+        f"DATEADD({fy_start}, -1, YEAR) : DATEADD({fy_start}, -1, DAY)"
+    )
+
+    with freezegun.freeze_time("2026-10-26"):
+        assert get_since_until(current_month) == (
+            datetime(2026, 10, 1),
+            datetime(2026, 10, 26),
+        )
+        assert get_since_until(last_month) == (
+            datetime(2026, 9, 1),
+            datetime(2026, 9, 30),
+        )
+        assert get_since_until(last_6_months) == (
+            datetime(2026, 4, 1),
+            datetime(2026, 10, 26),
+        )
+        assert get_since_until(last_12_months) == (
+            datetime(2025, 10, 1),
+            datetime(2026, 10, 26),
+        )
+        assert get_since_until(last_financial_year) == (
+            datetime(2025, 7, 1),
+            datetime(2026, 6, 30),
+        )
+
+    # Before July the last complete financial year is the one before that.
+    with freezegun.freeze_time("2026-03-10"):
+        assert get_since_until(last_month) == (
+            datetime(2026, 2, 1),
+            datetime(2026, 2, 28),
+        )
+        assert get_since_until(last_financial_year) == (
+            datetime(2024, 7, 1),
+            datetime(2025, 6, 30),
+        )
+
+    # Boundary days around the financial year roll-over.
+    with freezegun.freeze_time("2026-06-30"):
+        assert get_since_until(last_financial_year) == (
+            datetime(2024, 7, 1),
+            datetime(2025, 6, 30),
+        )
+    with freezegun.freeze_time("2026-07-01"):
+        assert get_since_until(current_month) == (
+            datetime(2026, 7, 1),
+            datetime(2026, 7, 1),
+        )
+        assert get_since_until(last_financial_year) == (
+            datetime(2025, 7, 1),
+            datetime(2026, 6, 30),
+        )

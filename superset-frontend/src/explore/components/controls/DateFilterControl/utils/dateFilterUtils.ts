@@ -26,6 +26,7 @@ import {
   COMMON_RANGE_VALUES_SET,
   CALENDAR_RANGE_VALUES_SET,
   CURRENT_RANGE_VALUES_SET,
+  CUSTOM_DATE_PRESET_BY_EXPRESSION,
 } from '.';
 import { FrameType } from '../types';
 
@@ -41,6 +42,9 @@ export const guessFrame = (timeRange: string): FrameType => {
   }
   if (timeRange === NO_TIME_RANGE) {
     return 'No filter';
+  }
+  if (CUSTOM_DATE_PRESET_BY_EXPRESSION.has(timeRange)) {
+    return 'CustomDate';
   }
   if (customTimeRangeDecode(timeRange).matchedFlag) {
     return 'Custom';

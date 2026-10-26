@@ -32,8 +32,12 @@ import { useLocale } from 'src/hooks/useLocale';
 import type { FrameComponentProps, CustomDatePreset } from '../types';
 import {
   CUSTOM_DATE_PRESETS,
+  CUSTOM_DATE_PRESET_BY_EXPRESSION,
+  CUSTOM_DATE_PRESET_EXPRESSIONS,
   SIMPLE_DATE_FORMAT,
 } from '../utils/constants';
+
+const CUSTOM_DATE_DEFAULT_DAYS = 7;
 
 const Container = styled.div`
   display: flex;
@@ -61,103 +65,60 @@ const DatePickerContainer = styled.div`
   `}
 `;
 
-export function computePresetRange(preset: CustomDatePreset): [Dayjs, Dayjs] {
-  const today = extendedDayjs().utc();
-  switch (preset) {
-    case 'CurrentMonth':
-      return [today.startOf('month'), today];
-    case 'LastMonth': {
-      const lastMonth = today.subtract(1, 'month');
-      return [lastMonth.startOf('month'), lastMonth.endOf('month')];
-    }
-    case 'Last6Month':
-      return [today.subtract(6, 'months').startOf('month'), today];
-    case 'Last12Month':
-      return [today.subtract(12, 'months').startOf('month'), today];
-    case 'LastFinancialYear': {
-      const currentYear = today.year();
-      const currentMonth = today.month(); // 0-indexed, so June = 5, July = 6
-      // If in July (6) or later, last FY ended June of this year
-      // If before July, last FY ended June of last year
-      const fyEndYear = currentMonth >= 6 ? currentYear : currentYear - 1;
-      return [
-        extendedDayjs.utc(`${fyEndYear - 1}-07-01`, SIMPLE_DATE_FORMAT),
-        extendedDayjs.utc(`${fyEndYear}-06-30`, SIMPLE_DATE_FORMAT),
-      ];
-    }
-    case 'CustomDate':
-    default:
-      return [today.subtract(7, 'days').startOf('day'), today];
-  }
+/**
+ * Resolve which radio option a time range value belongs to. Named presets are
+ * stored as rolling expressions (see CUSTOM_DATE_PRESET_EXPRESSIONS); anything
+ * else, including a concrete `YYYY-MM-DD : YYYY-MM-DD` range, is a custom date.
+ */
+export function detectPreset(value: string): CustomDatePreset {
+  return CUSTOM_DATE_PRESET_BY_EXPRESSION.get(value.trim()) ?? 'CustomDate';
 }
 
-export function detectPreset(value: string): CustomDatePreset {
+/**
+ * Parse a concrete `YYYY-MM-DD : YYYY-MM-DD` range, returning null for any
+ * other value (preset expressions, "No filter", legacy ranges, ...).
+ */
+export function parseCustomDateRange(value: string): [Dayjs, Dayjs] | null {
   const parts = value.split(' : ');
-  if (parts.length !== 2) return 'CustomDate';
-
+  if (parts.length !== 2) return null;
   const start = extendedDayjs(parts[0].trim(), SIMPLE_DATE_FORMAT, true);
   const end = extendedDayjs(parts[1].trim(), SIMPLE_DATE_FORMAT, true);
-  if (!start.isValid() || !end.isValid()) return 'CustomDate';
-
-  const presets: CustomDatePreset[] = [
-    'CurrentMonth',
-    'LastMonth',
-    'Last6Month',
-    'Last12Month',
-    'LastFinancialYear',
-  ];
-
-  for (const preset of presets) {
-    const [expectedStart, expectedEnd] = computePresetRange(preset);
-    if (
-      start.format(SIMPLE_DATE_FORMAT) ===
-        expectedStart.format(SIMPLE_DATE_FORMAT) &&
-      end.format(SIMPLE_DATE_FORMAT) ===
-        expectedEnd.format(SIMPLE_DATE_FORMAT)
-    ) {
-      return preset;
-    }
-  }
-  return 'CustomDate';
+  if (!start.isValid() || !end.isValid()) return null;
+  return [start, end];
 }
 
-function formatRange(start: Dayjs, end: Dayjs): string {
+export function formatCustomDateRange(start: Dayjs, end: Dayjs): string {
   return `${start.format(SIMPLE_DATE_FORMAT)} : ${end.format(SIMPLE_DATE_FORMAT)}`;
+}
+
+/** Range offered when the user first switches to a custom date. */
+export function defaultCustomDateRange(): [Dayjs, Dayjs] {
+  const today = extendedDayjs().startOf('day');
+  return [today.subtract(CUSTOM_DATE_DEFAULT_DAYS, 'days'), today];
 }
 
 export function CustomDateFrame({ value, onChange }: FrameComponentProps) {
   const datePickerLocale = useLocale();
 
   const selectedPreset = useMemo(() => detectPreset(value), [value]);
-
-  const rangePickerValue = useMemo((): [Dayjs, Dayjs] | null => {
-    const parts = value.split(' : ');
-    if (parts.length !== 2) return null;
-    const start = extendedDayjs(parts[0].trim(), SIMPLE_DATE_FORMAT, true);
-    const end = extendedDayjs(parts[1].trim(), SIMPLE_DATE_FORMAT, true);
-    if (!start.isValid() || !end.isValid()) return null;
-    return [start, end];
-  }, [value]);
+  const rangePickerValue = useMemo(() => parseCustomDateRange(value), [value]);
 
   function onPresetChange(e: RadioChangeEvent) {
     const preset = e.target.value as CustomDatePreset;
     if (preset === 'CustomDate') {
-      // Keep the current range or set a default
-      if (!rangePickerValue) {
-        const [start, end] = computePresetRange('CustomDate');
-        onChange(formatRange(start, end));
-      }
+      // Writing a concrete range is what selects "Custom date": concrete dates
+      // never equal a preset expression, so the selection cannot snap back to
+      // the previously chosen preset.
+      const [start, end] = rangePickerValue ?? defaultCustomDateRange();
+      onChange(formatCustomDateRange(start, end));
       return;
     }
-    const [start, end] = computePresetRange(preset);
-    onChange(formatRange(start, end));
+    onChange(CUSTOM_DATE_PRESET_EXPRESSIONS[preset]);
   }
 
-  function onRangePickerChange(
-    dates: [Dayjs | null, Dayjs | null] | null,
-  ) {
+  function onRangePickerChange(dates: [Dayjs | null, Dayjs | null] | null) {
     if (dates?.[0] && dates?.[1]) {
-      onChange(formatRange(dates[0], dates[1]));
+      onChange(formatCustomDateRange(dates[0], dates[1]));
     }
   }
 
@@ -168,9 +129,7 @@ export function CustomDateFrame({ value, onChange }: FrameComponentProps) {
   return (
     <AntdThemeProvider locale={datePickerLocale}>
       <Container data-test="custom-date-frame">
-        <div className="section-title">
-          {t('Configure custom date range')}
-        </div>
+        <div className="section-title">{t('Configure custom date range')}</div>
         <RowContainer>
           <RadioContainer>
             <Radio.GroupWrapper
